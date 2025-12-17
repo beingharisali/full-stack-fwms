@@ -45,9 +45,16 @@ UserSchema.pre("save", async function () {
 
 // instance method to create JWT
 UserSchema.methods.createJWT = function () {
-    return jwt.sign({ userId: this._id, name: this.name }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_LIFETIME
-    })
+    return jwt.sign(
+        {
+            userId: this._id,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            role: this.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_LIFETIME }
+    )
 }
 
 
