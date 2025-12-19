@@ -1,6 +1,7 @@
 require('dotenv').config({ path: './.env' })
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 // extra security packages
@@ -19,6 +20,7 @@ const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const auth = require('./middleware/authentication');
 
+app.use(cors());
 app.use(express.json());
 app.use(rateLimiter({
 	windowMs: 15 * 60 * 1000, // 15 minutes
