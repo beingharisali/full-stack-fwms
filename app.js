@@ -2,7 +2,7 @@ require('dotenv').config({ path: './.env' })
 
 const express = require('express');
 const cors = require('cors');
-const app = express();
+const app = express(); 
 
 // extra security packages
 const helmet = require('helmet')
@@ -19,6 +19,7 @@ const authRouter = require('./routes/auth')
 const notFoundMiddleware = require('./middleware/not-found');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const auth = require('./middleware/authentication');
+const vehicle = require('./routes/vehicleRoutes')
 
 app.use(cors());
 app.use(express.json());
@@ -32,7 +33,8 @@ app.use(xss())
 
 
 // routes
-app.use("/api/v1/auth", authRouter)
+app.use("/api/v1/auth", auth)
+app.use("/api/v1/vehicle", vehicle)
 
 
 app.use(notFoundMiddleware);
