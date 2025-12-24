@@ -11,7 +11,7 @@ const createTrip = async (req, res) => {
       arrivalTime: req.body.arrivalTime,
       departureTime: req.body.departureTime,
       date: req.body.date,
-      createdBy: req.user.userid
+      createdBy: req.user?.userId || req.body.createdBy
     });
 
     res.status(201).json({
