@@ -43,11 +43,13 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body
 
+    // validation
     if (!email || !password) {
         throw new BadRequestError('Please provide email and password')
     }
 
-    const user = await User.findOne({ email })
+    // IMPORTANT FIX: +password
+    const user = await User.findOne({ email }).select('+password')
     if (!user) {
         throw new UnauthenticatedError('Invalid Credentials')
     }
