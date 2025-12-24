@@ -20,10 +20,11 @@ const createVehicle = async (req, res )=>{
 
 const getAllVehicles = async (req, res)=>{
     try {
-        const vehicle = await model.find(req.body)
+        const vehicle = await model.find()
         res.status(200).json({
             success:true,
-            count: vehicle.length,vehicle
+            count: vehicle.length,
+            vehicles: vehicle
         })
     } catch (error) {
         res.status(500).json({
@@ -31,59 +32,55 @@ const getAllVehicles = async (req, res)=>{
             msg:"Error fetching vehicles",
             error:error
         })
-
     }
 }
 
-const singleVehicle = async (req, res)=>{
+const singleVehicle = async (req, res) => {
     try {
-const vehicle = await model.findById(req.params.id)
-        if(!vehicle){
+        const vehicle = await model.findById(req.params.id)
+        if (!vehicle) {
             return res.status(404).json({
-                succes:false,
-                msg:"vehicle not found"
-            })
-        }
-res.status(200).json({
-    succes:true,
-    vehicle:vehicle
-})
-
-    } catch (error) {
-        res.status(400).json({
-            succes:false,
-            msg:"invalid vehicle id",
-            error:error
-        })
-        
-    }
-}
-
-const updateVehicle = async (req,res)=>{
-    try {
-        const vehicle = await model.findByIdAndUpdate(
-            req.params.id,
-            res.body,{
-            new:true}
-        )
-
-        if(!vehicle){
-            return res.status(404).json({
-                success:false,
-                msg:"vehicle not found"
+                success: false,
+                msg: "vehicle not found"
             })
         }
         res.status(200).json({
             success: true,
-            msg:"vehicle update successfully",
-            vehicle:vehicle
+            vehicle: vehicle
         })
-
     } catch (error) {
         res.status(400).json({
-            success:false,
-            msg:"Error updating vehicle",
-            error:error
+            success: false,
+            msg: "invalid vehicle id",
+            error: error
+        })
+    }
+}
+
+const updateVehicle = async (req, res) => {
+    try {
+        const vehicle = await model.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        )
+
+        if (!vehicle) {
+            return res.status(404).json({
+                success: false,
+                msg: "vehicle not found"
+            })
+        }
+        res.status(200).json({
+            success: true,
+            msg: "vehicle updated successfully",
+            vehicle: vehicle
+        })
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            msg: "Error updating vehicle",
+            error: error
         })
     }
 }

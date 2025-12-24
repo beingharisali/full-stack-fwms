@@ -1,17 +1,13 @@
 const express = require("express")
 const router = express.Router()
-
 const {
   createVehicle,getAllVehicles,singleVehicle,updateVehicle,deleteVehicle
 } = require("../controllers/Vehicle")
 
-const auth = require("../middleware/authentication")
-
-// routes
-router.post("/create-vehicle",auth, createVehicle)
-router.get("/all-vehicle",auth, getAllVehicles)
-router.get("/single-vehicle", auth, singleVehicle)
-router.put("/update-vehicle", auth, updateVehicle)
-router.delete("/delete-vehicle", auth, deleteVehicle)
+router.post("/", createVehicle)
+router.get("/", getAllVehicles)
+router.get("/:id", singleVehicle)
+router.put("/:id", updateVehicle)
+router.delete("/:id", deleteVehicle)
 
 module.exports = router
