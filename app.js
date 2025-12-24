@@ -23,10 +23,10 @@ app.use(rateLimiter({ windowMs: 15 * 60 * 1000, limit: 100 }));
 app.use(helmet());
 app.use(xss());
 
-app.use("/api/auth", authRouter);
-app.use("/api/trips", auth, tripRoutes);
-app.use("/api/drivers", auth, driverRoutes);
-app.use("/api/vehicles", auth, vehicleRoutes);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/trips", auth, tripRoutes);
+app.use("/api/v1/drivers", auth, driverRoutes);
+app.use("/api/v1/vehicles", auth, vehicleRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
