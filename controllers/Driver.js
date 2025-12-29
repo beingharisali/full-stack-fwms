@@ -2,18 +2,28 @@ const model = require('../models/Driver')
 
 const createDriver = async (req, res) => {
     try {
-        const driver = await model.create(req.body) 
+        const { name, licenseNumber, licenseType } = req.body;
+        
+        // Validation
+        if (!name || !licenseNumber || !licenseType) {
+            return res.status(400).json({
+                success: false,
+                msg: "Please provide name, license number, and license type"
+            });
+        }
+        
+        const driver = await model.create(req.body);
         res.status(201).json({
             success: true,
             msg: "driver created successfully",
             driver: driver
-        })
+        });
     } catch(error) {
         res.status(400).json({
             success: false,
             msg: "Error occurred in creating driver",
-            error: error
-        })
+            error: error.message
+        });
     }
 }
 
@@ -61,25 +71,25 @@ const updateDriver = async (req, res) => {
         const driver = await model.findByIdAndUpdate(
             req.params.id,
             req.body,
-            { new: true }
-        )
+            { new: true, runValidators: true }
+        );
         if (!driver) {
             return res.status(404).json({
                 success: false,
                 msg: "driver not found"
-            })
+            });
         }
         res.status(200).json({
             success: true,
             msg: "driver updated successfully",
             driver: driver
-        })
+        });
     } catch(error) {
         res.status(400).json({
             success: false,
             msg: "Error updating driver",
-            error: error
-        })
+            error: error.message
+        });
     }
 }
 
