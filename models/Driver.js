@@ -13,13 +13,20 @@ const driverSchema = new mongoose.Schema({
   },
   licenseType: {
     type: String,
-    enum: ['A', 'B', 'C'], // example license types
+    enum: ['A', 'B', 'C'], 
     required: true
   },
   available: {
     type: Boolean,
     default: true
+  },
+
+  assignedVehicle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Vehicle',
+    default: null
   }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Driver', driverSchema);

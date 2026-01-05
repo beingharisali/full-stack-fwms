@@ -28,18 +28,22 @@ app.use("/api/v1/trips", auth, tripRoutes);
 app.use("/api/v1/drivers", auth, driverRoutes);
 app.use("/api/v1/vehicles", auth, vehicleRoutes);
 
+app.get("/ping", (req, res) => {
+  res.json({ message: "Server is alive" });
+});
+
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 const start = async () => {
-	try {
-		await connectDB(process.env.MONGO_URI);
-		app.listen(process.env.PORT || 5000, () =>
-			console.log(`Server running on port ${process.env.PORT || 5000}`)
-		);
-	} catch (error) {
-		console.log(error);
-	}
+  try {
+    await connectDB(process.env.MONGO_URI);
+    app.listen(process.env.PORT || 5000, () =>
+      console.log(`Server running on port ${process.env.PORT || 5000}`)
+    );
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 start();
