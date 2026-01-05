@@ -14,6 +14,7 @@ const driverSchema = new mongoose.Schema({
   licenseType: {
     type: String,
     enum: ['A', 'B', 'C'], 
+    enum: ['Motorcycle', 'LTV', 'HTV', 'PSV'], // vehicle license types
     required: true
   },
   available: {
