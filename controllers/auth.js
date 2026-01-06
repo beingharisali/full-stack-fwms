@@ -2,24 +2,21 @@ const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, UnauthenticatedError } = require('../errors')
 const User = require('../models/User')
 
-/**
- * REGISTER / SIGNUP
- */
+
 const register = async (req, res) => {
     const { firstName, lastName, email, password, role } = req.body
 
-    // validation
+   
     if (!firstName || !lastName || !email || !password) {
         throw new BadRequestError('Please provide all values')
     }
 
-    // check if email already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
         return res.status(StatusCodes.BAD_REQUEST).json({ msg: 'Email already exists' })
     }
 
-    // create user
+ 
     const user = await User.create({
         firstName,
         lastName,
@@ -28,10 +25,10 @@ const register = async (req, res) => {
         role
     })
 
-    // create token
+   
     const token = user.createJWT()
 
-    // response
+   
     res.status(StatusCodes.CREATED).json({
         user: {
             id: user._id,
@@ -43,18 +40,16 @@ const register = async (req, res) => {
     })
 }
 
-/**
- * LOGIN
- */
+
 const login = async (req, res) => {
     const { email, password } = req.body
 
-    // validation
+    
     if (!email || !password) {
         throw new BadRequestError('Please provide email and password')
     }
 
-    // IMPORTANT FIX: +password
+   
     const user = await User.findOne({ email }).select('+password')
     if (!user) {
         throw new UnauthenticatedError('Invalid Credentials')
@@ -77,8 +72,25 @@ const login = async (req, res) => {
         token
     })
 }
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
+
 
 module.exports = {
     register,
-    login
+    login,
+    getAllUsers,
 }
