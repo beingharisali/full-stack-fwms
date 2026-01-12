@@ -52,7 +52,7 @@ app.use('/api/v1/trips', authentication, tripRoutes);
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const port = process.env.PORT || 3000;
+const port = 5000;
 
 const start = async () => {
   try {
