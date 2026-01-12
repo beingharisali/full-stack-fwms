@@ -210,12 +210,78 @@ const unassignVehicleFromDriver = async (req, res) => {
     }
 };
 
+const totalDrivers = async (req, res) => {
+  try {
+    const result = await model.aggregate([{ $count: "totalDrivers" }]);
+    res.status(200).json({
+      success: true,
+      totalDrivers: result[0]?.totalDrivers || 0
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Error getting total drivers" });
+  }
+};
+const driversByAvailability = async (req, res) => {
+  try {
+    const result = await model.aggregate([
+      { $group: { _id: "$available", count: { $sum: 1 } } }
+    ]);
+
+    const formatted = result.map(r => ({
+      status: r._id ? "Available" : "Not Available",
+      count: r.count
+    }));
+
+    res.status(200).json({ success: true, report: formatted });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Error getting availability report" });
+  }
+};
+const assignedVsFreeDrivers = async (req, res) => {
+  try {
+    const result = await model.aggregate([
+      { $group: { _id: { $cond: [{ $ifNull: ["$assignedVehicle", false] }, "Assigned", "Free"] }, count: { $sum: 1 } } }
+    ]);
+
+    res.status(200).json({ success: true, report: result });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Error getting assigned/free drivers" });
+  }
+};
+const driversByLicenseType = async (req, res) => {
+  try {
+    const result = await model.aggregate([
+      { $group: { _id: "$licenseType", count: { $sum: 1 } } }
+    ]);
+
+    res.status(200).json({ success: true, report: result });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Error getting license type report" });
+  }
+};
+const monthlyDriverReport = async (req, res) => {
+  try {
+    const result = await model.aggregate([
+      { $group: { _id: { month: { $month: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { "_id.month": 1 } }
+    ]);
+
+    res.status(200).json({ success: true, report: result });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: "Error getting monthly driver report" });
+  }
+};
 module.exports = {
+    totalDrivers,
     createDriver,
     getAllDrivers,
     getDriverById,
     updateDriver,
     deleteDriver,
     assignVehicleToDriver,
-    unassignVehicleFromDriver
+    unassignVehicleFromDriver,
+    driversByAvailability,
+    assignedVsFreeDrivers,
+    driversByLicenseType,
+    monthlyDriverReport
 };
