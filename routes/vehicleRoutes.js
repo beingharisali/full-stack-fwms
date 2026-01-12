@@ -7,7 +7,15 @@ const {
   singleVehicle,
   updateVehicle,
   deleteVehicle,
+  totalVehicles,
+  vehiclesByStatus,
+  vehiclesByType,
+  assignedVsUnassigned,
+  monthlyVehicleReport,
 } = require("../controllers/Vehicle");
+
+
+  
 
 const authentication = require("../middleware/authentication");
 const authorizeRoles = require("../middleware/authorizeRoles");
@@ -15,36 +23,20 @@ const authorizeRoles = require("../middleware/authorizeRoles");
 // 🔐 All vehicle routes require login
 router.use(authentication);
 
-// 🔵 Admin & Manager → view drivers / vehicles
-router.get(
-  "/",
-  authorizeRoles("driver"),
-  getAllVehicles
-);
+// 📊 VEHICLE REPORT ROUTES
+router.get("/reports/total", authorizeRoles("admin", "manager"), totalVehicles);
+router.get("/reports/status", authorizeRoles("admin", "manager"), vehiclesByStatus);
+router.get("/reports/type", authorizeRoles("admin", "manager"), vehiclesByType);
+router.get("/reports/assignment", authorizeRoles("admin", "manager"), assignedVsUnassigned);
+router.get("/reports/monthly", authorizeRoles("admin", "manager"), monthlyVehicleReport);
 
-router.get(
-  "/:id",
-  authorizeRoles("driver"),
-  singleVehicle
-);
+// 🔵 View vehicles (Admin / Manager / Driver)
+router.get("/", authorizeRoles("driver"), getAllVehicles);
+router.get("/:id", authorizeRoles("driver"), singleVehicle);
 
-// 🔴 Only Admin → create / update / delete
-router.post(
-  "/",
-  authorizeRoles("admin"),
-  createVehicle
-);
-
-router.put(
-  "/:id",
-  authorizeRoles("admin"),
-  updateVehicle
-);
-
-router.delete(
-  "/:id",
-  authorizeRoles("admin"),
-  deleteVehicle
-);
+// 🔴 Only Admin → CRUD
+router.post("/", authorizeRoles("admin"), createVehicle);
+router.put("/:id", authorizeRoles("admin"), updateVehicle);
+router.delete("/:id", authorizeRoles("admin"), deleteVehicle);
 
 module.exports = router;
