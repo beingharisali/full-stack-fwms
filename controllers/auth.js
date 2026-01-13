@@ -143,10 +143,86 @@ const deleteUser = async (req, res) => {
     message: "User deleted successfully",
   });
 };
+// ================= MANAGER REPORTS (AGGREGATION) =================
+
+// 🔹 Total Managers
+const totalManagers = async (req, res) => {
+  try {
+    const result = await User.aggregate([
+      { $match: { role: "manager" } },
+      { $count: "totalManagers" }
+    ]);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      totalManagers: result[0]?.totalManagers || 0,
+    });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// 🔹 Active vs Inactive Managers
+const managerStatusReport = async (req, res) => {
+  try {
+    const result = await User.aggregate([
+      { $match: { role: "manager" } },
+      {
+        $group: {
+          _id: "$active", // true / false
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      report: result,
+    });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// 🔹 Monthly Manager Report
+const monthlyManagerReport = async (req, res) => {
+  try {
+    const result = await User.aggregate([
+      { $match: { role: "manager" } },
+      {
+        $group: {
+          _id: { month: { $month: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.month": 1 } },
+    ]);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      report: result,
+    });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   register,
   login,
   getAllUsers,
   deleteUser,
+  totalManagers,
+  managerStatusReport,
+  monthlyManagerReport
 };
