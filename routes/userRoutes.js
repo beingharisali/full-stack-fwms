@@ -2,9 +2,15 @@ const express = require("express");
 const authentication = require("../middleware/authentication");
 const authorizeRoles = require("../middleware/authorizeRoles");
 
+const {
+  totalManagers,
+  managerStatusReport,
+  monthlyManagerReport,
+} = require("../controllers/auth");
+
 const router = express.Router();
 
-// Only logged-in users
+
 router.get(
   "/profile",
   authentication,
@@ -16,7 +22,6 @@ router.get(
   }
 );
 
-// Only ADMIN
 router.get(
   "/admin",
   authentication,
@@ -26,14 +31,36 @@ router.get(
   }
 );
 
-// Admin + User
 router.get(
   "/dashboard",
   authentication,
-  authorizeRoles("admin", "user"),
+  authorizeRoles("admin", "manager"),
   (req, res) => {
     res.json({ message: "Dashboard Access" });
   }
+);
+
+
+
+router.get(
+  "/reports/managers/total",
+  authentication,
+  authorizeRoles("admin"),
+  totalManagers
+);
+
+router.get(
+  "/reports/managers/status",
+  authentication,
+  authorizeRoles("admin"),
+  managerStatusReport
+);
+
+router.get(
+  "/reports/managers/monthly",
+  authentication,
+  authorizeRoles("admin"),
+  monthlyManagerReport
 );
 
 module.exports = router;
