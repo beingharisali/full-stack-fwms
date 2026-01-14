@@ -1,43 +1,96 @@
 const express = require('express');
 const router = express.Router();
-const driverController = require('../controllers/drive'); // ✅ existing CRUD controller
 
+const driverController = require('../controllers/drive');
 const authentication = require('../middleware/authentication');
 const authorizeRoles = require('../middleware/authorizeRoles');
 
-// 🔐 All driver routes require login
+// 🔐 Authentication for all driver routes
 router.use(authentication);
 
-// ===================== CRUD + Assignment =====================
+/* ================= REPORT ROUTES (ALWAYS ON TOP) ================= */
 
-// CREATE DRIVER
-router.post('/', driverController.createDriver);
+router.get(
+  '/reports/total',
+  authorizeRoles('admin', 'manager'),
+  driverController.totalDrivers
+);
 
-// GET ALL DRIVERS
-router.get('/', driverController.getAllDrivers);
+router.get(
+  '/reports/availability',
+  authorizeRoles('admin', 'manager'),
+  driverController.driversByAvailability
+);
 
-// GET SINGLE DRIVER
-router.get('/:id', driverController.getDriverById);
+router.get(
+  '/reports/assignment',
+  authorizeRoles('admin', 'manager'),
+  driverController.assignedVsFreeDrivers
+);
 
-// UPDATE DRIVER
-router.put('/:id', driverController.updateDriver);
+router.get(
+  '/reports/license-type',
+  authorizeRoles('admin', 'manager'),
+  driverController.driversByLicenseType
+);
 
-// DELETE DRIVER
-router.delete('/:id', driverController.deleteDriver);
+router.get(
+  '/reports/monthly',
+  authorizeRoles('admin', 'manager'),
+  driverController.monthlyDriverReport
+);
 
-// ASSIGN VEHICLE TO DRIVER
-router.post('/assign-vehicle', driverController.assignVehicleToDriver);
+/* ================= DRIVER CRUD ================= */
 
-// UNASSIGN VEHICLE FROM DRIVER
-router.put('/unassign-vehicle/:id', driverController.unassignVehicleFromDriver);
+// ➕ Create Driver (Admin / Manager)
+router.post(
+  '/',
+  authorizeRoles('admin', 'manager'),
+  driverController.createDriver
+);
 
-// ===================== AGGREGATION REPORT ROUTES =====================
+// 📄 Get All Drivers
+router.get(
+  '/',
+  authorizeRoles('admin', 'manager'),
+  driverController.getAllDrivers
+);
 
-// Only Admin & Manager can access reports
-router.get('/reports/total', authorizeRoles('admin', 'manager'), driverController.totalDrivers);
-router.get('/reports/availability', authorizeRoles('admin', 'manager'), driverController.driversByAvailability);
-router.get('/reports/assignment', authorizeRoles('admin', 'manager'), driverController.assignedVsFreeDrivers);
-router.get('/reports/license-type', authorizeRoles('admin', 'manager'), driverController.driversByLicenseType);
-router.get('/reports/monthly', authorizeRoles('admin', 'manager'), driverController.monthlyDriverReport);
+// 📄 Get Driver by ID
+router.get(
+  '/:id',
+  authorizeRoles('admin', 'manager'),
+  driverController.getDriverById
+);
+
+// ✏ Update Driver
+router.put(
+  '/:id',
+  authorizeRoles('admin', 'manager'),
+  driverController.updateDriver
+);
+
+// ❌ Delete Driver (Admin only)
+router.delete(
+  '/:id',
+  authorizeRoles('admin'),
+  driverController.deleteDriver
+);
+
+/* ================= VEHICLE ASSIGNMENT ================= */
+
+// 🚗 Assign vehicle
+router.post(
+  '/assign-vehicle',
+  authorizeRoles('admin', 'manager'),
+  driverController.assignVehicleToDriver
+);
+
+// 🚙 Unassign vehicle
+router.put(
+  '/unassign-vehicle/:id',
+  authorizeRoles('admin', 'manager'),
+  driverController.unassignVehicleFromDriver
+);
 
 module.exports = router;

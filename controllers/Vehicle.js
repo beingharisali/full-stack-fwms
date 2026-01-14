@@ -1,6 +1,6 @@
-const model = require("../models/Vehicle");
+const Vehicle = require("../models/Vehicle");
 
-
+/* ================= CREATE VEHICLE ================= */
 const createVehicle = async (req, res) => {
   try {
     const { number, type } = req.body;
@@ -12,47 +12,55 @@ const createVehicle = async (req, res) => {
       });
     }
 
-    const vehicle = await model.create(req.body);
+    const vehicle = await Vehicle.create(req.body);
+
     res.status(201).json({
       success: true,
-      msg: "vehicle created successfully",
+      msg: "Vehicle created successfully",
       vehicle,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      msg: "Error occurred in creating vehicle",
+      msg: error.code === 11000
+        ? "Vehicle number already exists"
+        : "Error creating vehicle",
       error: error.message,
     });
   }
 };
 
+/* ================= GET ALL VEHICLES ================= */
 const getAllVehicles = async (req, res) => {
   try {
-    const vehicle = await model.find();
+    const vehicles = await Vehicle.find().sort({ createdAt: -1 });
+
     res.status(200).json({
       success: true,
-      count: vehicle.length,
-      vehicles: vehicle,
+      count: vehicles.length,
+      vehicles,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       msg: "Error fetching vehicles",
-      error,
+      error: error.message,
     });
   }
 };
 
+/* ================= GET SINGLE VEHICLE ================= */
 const singleVehicle = async (req, res) => {
   try {
-    const vehicle = await model.findById(req.params.id);
+    const vehicle = await Vehicle.findById(req.params.id);
+
     if (!vehicle) {
       return res.status(404).json({
         success: false,
-        msg: "vehicle not found",
+        msg: "Vehicle not found",
       });
     }
+
     res.status(200).json({
       success: true,
       vehicle,
@@ -60,15 +68,15 @@ const singleVehicle = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       success: false,
-      msg: "invalid vehicle id",
-      error,
+      msg: "Invalid vehicle ID",
     });
   }
 };
 
+/* ================= UPDATE VEHICLE ================= */
 const updateVehicle = async (req, res) => {
   try {
-    const vehicle = await model.findByIdAndUpdate(
+    const vehicle = await Vehicle.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
@@ -77,12 +85,13 @@ const updateVehicle = async (req, res) => {
     if (!vehicle) {
       return res.status(404).json({
         success: false,
-        msg: "vehicle not found",
+        msg: "Vehicle not found",
       });
     }
+
     res.status(200).json({
       success: true,
-      msg: "vehicle updated successfully",
+      msg: "Vehicle updated successfully",
       vehicle,
     });
   } catch (error) {
@@ -94,16 +103,18 @@ const updateVehicle = async (req, res) => {
   }
 };
 
+/* ================= DELETE VEHICLE ================= */
 const deleteVehicle = async (req, res) => {
   try {
-    const vehicle = await model.findByIdAndDelete(req.params.id);
+    const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
 
     if (!vehicle) {
       return res.status(404).json({
         success: false,
-        msg: "vehicle not found",
+        msg: "Vehicle not found",
       });
     }
+
     res.status(200).json({
       success: true,
       msg: "Vehicle deleted successfully",
@@ -117,31 +128,31 @@ const deleteVehicle = async (req, res) => {
   }
 };
 
+/* ================= AGGREGATION REPORTS ================= */
 
-
- 
+/* 🔹 TOTAL VEHICLES */
 const totalVehicles = async (req, res) => {
   try {
-    const result = await model.aggregate([
-      { $count: "totalVehicles" },
+    const result = await Vehicle.aggregate([
+      { $count: "total" },
     ]);
 
     res.status(200).json({
       success: true,
-      totalVehicles: result[0]?.totalVehicles || 0,
+      totalVehicles: result[0]?.total || 0,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      msg: "Error getting total vehicles",
+      msg: "Error fetching total vehicles",
     });
   }
 };
 
-
+/* 🔹 VEHICLES BY STATUS */
 const vehiclesByStatus = async (req, res) => {
   try {
-    const result = await model.aggregate([
+    const result = await Vehicle.aggregate([
       {
         $group: {
           _id: "$status",
@@ -157,15 +168,15 @@ const vehiclesByStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      msg: "Error getting status report",
+      msg: "Error fetching status report",
     });
   }
 };
 
-
+/* 🔹 VEHICLES BY TYPE */
 const vehiclesByType = async (req, res) => {
   try {
-    const result = await model.aggregate([
+    const result = await Vehicle.aggregate([
       {
         $group: {
           _id: "$type",
@@ -181,15 +192,15 @@ const vehiclesByType = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      msg: "Error getting type report",
+      msg: "Error fetching type report",
     });
   }
 };
 
-
+/* 🔹 ASSIGNED VS UNASSIGNED */
 const assignedVsUnassigned = async (req, res) => {
   try {
-    const result = await model.aggregate([
+    const result = await Vehicle.aggregate([
       {
         $group: {
           _id: {
@@ -211,22 +222,25 @@ const assignedVsUnassigned = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      msg: "Error getting assignment report",
+      msg: "Error fetching assignment report",
     });
   }
 };
 
-
+/* 🔹 MONTHLY VEHICLE REPORT */
 const monthlyVehicleReport = async (req, res) => {
   try {
-    const result = await model.aggregate([
+    const result = await Vehicle.aggregate([
       {
         $group: {
-          _id: { month: { $month: "$createdAt" } },
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
           count: { $sum: 1 },
         },
       },
-      { $sort: { "_id.month": 1 } },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
     res.status(200).json({
@@ -236,12 +250,12 @@ const monthlyVehicleReport = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      msg: "Error getting monthly report",
+      msg: "Error fetching monthly report",
     });
   }
 };
 
-
+/* ================= EXPORTS ================= */
 module.exports = {
   createVehicle,
   getAllVehicles,
