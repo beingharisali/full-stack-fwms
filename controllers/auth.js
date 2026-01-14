@@ -2,7 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
 const User = require("../models/User");
 
-// ---------------- Register ----------------
+/* ================= REGISTER ================= */
 const register = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
 
@@ -10,13 +10,11 @@ const register = async (req, res) => {
     throw new BadRequestError("Please provide all values");
   }
 
-  // 🔐 Role validation
   const allowedRoles = ["admin", "manager", "driver"];
   if (role && !allowedRoles.includes(role)) {
     throw new BadRequestError("Invalid role");
   }
 
-  // 🚫 Prevent normal users from creating admin
   if (req.user?.role === "manager" && role === "admin") {
     return res.status(StatusCodes.FORBIDDEN).json({
       success: false,
@@ -33,9 +31,9 @@ const register = async (req, res) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ msg: "Email already exists" });
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      msg: "Email already exists",
+    });
   }
 
   const user = await User.create({
@@ -43,7 +41,7 @@ const register = async (req, res) => {
     lastName,
     email,
     password,
-    role: role || "driver", // default role
+    role: role || "driver",
   });
 
   const token = user.createJWT();
@@ -60,7 +58,7 @@ const register = async (req, res) => {
   });
 };
 
-// ---------------- Login ----------------
+/* ================= LOGIN ================= */
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -92,7 +90,7 @@ const login = async (req, res) => {
   });
 };
 
-// ---------------- Get All Users ----------------
+/* ================= GET ALL USERS ================= */
 const getAllUsers = async (req, res) => {
   const currentRole = req.user.role;
 
@@ -115,21 +113,22 @@ const getAllUsers = async (req, res) => {
   });
 };
 
-// ---------------- Delete User ----------------
+/* ================= DELETE USER ================= */
 const deleteUser = async (req, res) => {
   const currentRole = req.user.role;
   const targetUser = await User.findById(req.params.id);
 
   if (!targetUser) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ success: false, message: "User not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({
+      success: false,
+      message: "User not found",
+    });
   }
 
-  // 🔐 Delete rules
-  if (currentRole === "admin") {
-    await targetUser.deleteOne();
-  } else if (currentRole === "manager" && targetUser.role === "driver") {
+  if (
+    currentRole === "admin" ||
+    (currentRole === "manager" && targetUser.role === "driver")
+  ) {
     await targetUser.deleteOne();
   } else {
     return res.status(StatusCodes.FORBIDDEN).json({
@@ -143,14 +142,15 @@ const deleteUser = async (req, res) => {
     message: "User deleted successfully",
   });
 };
-// ================= MANAGER REPORTS (AGGREGATION) =================
 
-// 🔹 Total Managers
+/* ================= MANAGER REPORTS (AGGREGATION) ================= */
+
+/* 🔹 TOTAL MANAGERS */
 const totalManagers = async (req, res) => {
   try {
     const result = await User.aggregate([
       { $match: { role: "manager" } },
-      { $count: "totalManagers" }
+      { $count: "totalManagers" },
     ]);
 
     res.status(StatusCodes.OK).json({
@@ -165,14 +165,13 @@ const totalManagers = async (req, res) => {
   }
 };
 
-// 🔹 Active vs Inactive Managers
-const managerStatusReport = async (req, res) => {
+/* 🔹 ROLE DISTRIBUTION (Admin / Manager / Driver) */
+const usersByRoleReport = async (req, res) => {
   try {
     const result = await User.aggregate([
-      { $match: { role: "manager" } },
       {
         $group: {
-          _id: "$active", // true / false
+          _id: "$role",
           count: { $sum: 1 },
         },
       },
@@ -190,18 +189,21 @@ const managerStatusReport = async (req, res) => {
   }
 };
 
-// 🔹 Monthly Manager Report
+/* 🔹 MONTHLY MANAGER REPORT */
 const monthlyManagerReport = async (req, res) => {
   try {
     const result = await User.aggregate([
       { $match: { role: "manager" } },
       {
         $group: {
-          _id: { month: { $month: "$createdAt" } },
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
           count: { $sum: 1 },
         },
       },
-      { $sort: { "_id.month": 1 } },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
     res.status(StatusCodes.OK).json({
@@ -216,13 +218,13 @@ const monthlyManagerReport = async (req, res) => {
   }
 };
 
-
+/* ================= EXPORTS ================= */
 module.exports = {
   register,
   login,
   getAllUsers,
   deleteUser,
   totalManagers,
-  managerStatusReport,
-  monthlyManagerReport
+  usersByRoleReport,
+  monthlyManagerReport,
 };

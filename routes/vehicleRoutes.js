@@ -20,21 +20,18 @@ const {
 const authentication = require("../middleware/authentication");
 const authorizeRoles = require("../middleware/authorizeRoles");
 
-// 🔐 All vehicle routes require login
+
 router.use(authentication);
 
-// 📊 VEHICLE REPORT ROUTES
 router.get("/reports/total", authorizeRoles("admin", "manager"), totalVehicles);
 router.get("/reports/status", authorizeRoles("admin", "manager"), vehiclesByStatus);
 router.get("/reports/type", authorizeRoles("admin", "manager"), vehiclesByType);
 router.get("/reports/assignment", authorizeRoles("admin", "manager"), assignedVsUnassigned);
 router.get("/reports/monthly", authorizeRoles("admin", "manager"), monthlyVehicleReport);
 
-// 🔵 View vehicles (Admin / Manager / Driver)
 router.get("/", authorizeRoles("driver"), getAllVehicles);
 router.get("/:id", authorizeRoles("driver"), singleVehicle);
 
-// 🔴 Only Admin → CRUD
 router.post("/", authorizeRoles("admin"), createVehicle);
 router.put("/:id", authorizeRoles("admin"), updateVehicle);
 router.delete("/:id", authorizeRoles("admin"), deleteVehicle);
