@@ -1,6 +1,5 @@
 const Vehicle = require("../models/Vehicle");
 
-/* ================= CREATE VEHICLE ================= */
 const createVehicle = async (req, res) => {
   try {
     const { number, type } = req.body;
@@ -30,7 +29,6 @@ const createVehicle = async (req, res) => {
   }
 };
 
-/* ================= GET ALL VEHICLES ================= */
 const getAllVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find().sort({ createdAt: -1 });
@@ -49,7 +47,6 @@ const getAllVehicles = async (req, res) => {
   }
 };
 
-/* ================= GET SINGLE VEHICLE ================= */
 const singleVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
@@ -73,7 +70,6 @@ const singleVehicle = async (req, res) => {
   }
 };
 
-/* ================= UPDATE VEHICLE ================= */
 const updateVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findByIdAndUpdate(
@@ -103,7 +99,6 @@ const updateVehicle = async (req, res) => {
   }
 };
 
-/* ================= DELETE VEHICLE ================= */
 const deleteVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
@@ -128,9 +123,7 @@ const deleteVehicle = async (req, res) => {
   }
 };
 
-/* ================= AGGREGATION REPORTS ================= */
 
-/* 🔹 TOTAL VEHICLES */
 const totalVehicles = async (req, res) => {
   try {
     const result = await Vehicle.aggregate([
@@ -149,7 +142,6 @@ const totalVehicles = async (req, res) => {
   }
 };
 
-/* 🔹 VEHICLES BY STATUS */
 const vehiclesByStatus = async (req, res) => {
   try {
     const result = await Vehicle.aggregate([
@@ -173,7 +165,6 @@ const vehiclesByStatus = async (req, res) => {
   }
 };
 
-/* 🔹 VEHICLES BY TYPE */
 const vehiclesByType = async (req, res) => {
   try {
     const result = await Vehicle.aggregate([
@@ -197,7 +188,6 @@ const vehiclesByType = async (req, res) => {
   }
 };
 
-/* 🔹 ASSIGNED VS UNASSIGNED */
 const assignedVsUnassigned = async (req, res) => {
   try {
     const result = await Vehicle.aggregate([
@@ -227,7 +217,6 @@ const assignedVsUnassigned = async (req, res) => {
   }
 };
 
-/* 🔹 MONTHLY VEHICLE REPORT */
 const monthlyVehicleReport = async (req, res) => {
   try {
     const result = await Vehicle.aggregate([
@@ -255,7 +244,6 @@ const monthlyVehicleReport = async (req, res) => {
   }
 };
 
-/* ================= EXPORTS ================= */
 module.exports = {
   createVehicle,
   getAllVehicles,
@@ -268,3 +256,5 @@ module.exports = {
   assignedVsUnassigned,
   monthlyVehicleReport,
 };
+
+console.log();
