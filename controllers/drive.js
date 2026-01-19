@@ -1,7 +1,6 @@
 const Driver = require("../models/Driver");
 const Vehicle = require("../models/Vehicle");
 
-/* ================= CREATE DRIVER ================= */
 const createDriver = async (req, res) => {
   try {
     const { name, licenseNumber, licenseType } = req.body;
@@ -32,7 +31,6 @@ const createDriver = async (req, res) => {
   }
 };
 
-/* ================= GET ALL DRIVERS ================= */
 const getAllDrivers = async (req, res) => {
   try {
     const drivers = await Driver.find()
@@ -53,7 +51,6 @@ const getAllDrivers = async (req, res) => {
   }
 };
 
-/* ================= GET SINGLE DRIVER ================= */
 const getDriverById = async (req, res) => {
   try {
     const driver = await Driver.findById(req.params.id).populate(
@@ -79,7 +76,6 @@ const getDriverById = async (req, res) => {
   }
 };
 
-/* ================= UPDATE DRIVER ================= */
 const updateDriver = async (req, res) => {
   try {
     const driver = await Driver.findByIdAndUpdate(
@@ -109,7 +105,6 @@ const updateDriver = async (req, res) => {
   }
 };
 
-/* ================= DELETE DRIVER ================= */
 const deleteDriver = async (req, res) => {
   try {
     const driver = await Driver.findByIdAndDelete(req.params.id);
@@ -134,7 +129,6 @@ const deleteDriver = async (req, res) => {
   }
 };
 
-/* ================= ASSIGN VEHICLE ================= */
 const assignVehicleToDriver = async (req, res) => {
   try {
     const { driverId, vehicleId } = req.body;
@@ -175,7 +169,6 @@ const assignVehicleToDriver = async (req, res) => {
   }
 };
 
-/* ================= UNASSIGN VEHICLE ================= */
 const unassignVehicleFromDriver = async (req, res) => {
   try {
     const driver = await Driver.findById(req.params.id);
@@ -208,9 +201,7 @@ const unassignVehicleFromDriver = async (req, res) => {
   }
 };
 
-/* ================= AGGREGATION REPORTS ================= */
 
-/* 🔹 TOTAL DRIVERS */
 const totalDrivers = async (req, res) => {
   try {
     const result = await Driver.aggregate([{ $count: "total" }]);
@@ -223,7 +214,6 @@ const totalDrivers = async (req, res) => {
   }
 };
 
-/* 🔹 AVAILABLE VS NOT AVAILABLE */
 const driversByAvailability = async (req, res) => {
   try {
     const result = await Driver.aggregate([
@@ -241,7 +231,6 @@ const driversByAvailability = async (req, res) => {
   }
 };
 
-/* 🔹 ASSIGNED VS FREE */
 const assignedVsFreeDrivers = async (req, res) => {
   try {
     const result = await Driver.aggregate([
@@ -265,7 +254,6 @@ const assignedVsFreeDrivers = async (req, res) => {
   }
 };
 
-/* 🔹 LICENSE TYPE REPORT */
 const driversByLicenseType = async (req, res) => {
   try {
     const result = await Driver.aggregate([
@@ -278,7 +266,6 @@ const driversByLicenseType = async (req, res) => {
   }
 };
 
-/* 🔹 MONTHLY REPORT */
 const monthlyDriverReport = async (req, res) => {
   try {
     const result = await Driver.aggregate([
@@ -300,7 +287,6 @@ const monthlyDriverReport = async (req, res) => {
   }
 };
 
-/* ================= EXPORTS ================= */
 module.exports = {
   createDriver,
   getAllDrivers,
@@ -315,3 +301,5 @@ module.exports = {
   driversByLicenseType,
   monthlyDriverReport,
 };
+
+console.log();

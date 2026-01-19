@@ -116,3 +116,5 @@ module.exports = {
   updateTrip,
   deleteTrip
 };
+
+console.log();

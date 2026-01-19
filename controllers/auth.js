@@ -2,7 +2,6 @@ const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
 const User = require("../models/User");
 
-/* ================= REGISTER ================= */
 const register = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
 
@@ -58,7 +57,6 @@ const register = async (req, res) => {
   });
 };
 
-/* ================= LOGIN ================= */
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -90,7 +88,6 @@ const login = async (req, res) => {
   });
 };
 
-/* ================= GET ALL USERS ================= */
 const getAllUsers = async (req, res) => {
   const currentRole = req.user.role;
 
@@ -113,7 +110,6 @@ const getAllUsers = async (req, res) => {
   });
 };
 
-/* ================= DELETE USER ================= */
 const deleteUser = async (req, res) => {
   const currentRole = req.user.role;
   const targetUser = await User.findById(req.params.id);
@@ -143,9 +139,7 @@ const deleteUser = async (req, res) => {
   });
 };
 
-/* ================= MANAGER REPORTS (AGGREGATION) ================= */
 
-/* 🔹 TOTAL MANAGERS */
 const totalManagers = async (req, res) => {
   try {
     const result = await User.aggregate([
@@ -165,7 +159,6 @@ const totalManagers = async (req, res) => {
   }
 };
 
-/* 🔹 ROLE DISTRIBUTION (Admin / Manager / Driver) */
 const usersByRoleReport = async (req, res) => {
   try {
     const result = await User.aggregate([
@@ -189,7 +182,6 @@ const usersByRoleReport = async (req, res) => {
   }
 };
 
-/* 🔹 MONTHLY MANAGER REPORT */
 const monthlyManagerReport = async (req, res) => {
   try {
     const result = await User.aggregate([
@@ -218,7 +210,6 @@ const monthlyManagerReport = async (req, res) => {
   }
 };
 
-/* ================= EXPORTS ================= */
 module.exports = {
   register,
   login,
@@ -228,3 +219,6 @@ module.exports = {
   usersByRoleReport,
   monthlyManagerReport,
 };
+
+
+console.log();
