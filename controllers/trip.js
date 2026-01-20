@@ -117,4 +117,3 @@ module.exports = {
   deleteTrip
 };
 
-console.log();

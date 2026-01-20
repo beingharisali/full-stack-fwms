@@ -302,4 +302,3 @@ module.exports = {
   monthlyDriverReport,
 };
 
-console.log();

@@ -6,41 +6,39 @@ const driverSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      index: true, // 🔹 search / sort fast
+      index: true, 
     },
     licenseNumber: {
       type: String,
       required: true,
       unique: true,
-      index: true, // 🔹 fast lookup
+      index: true, 
     },
     licenseType: {
       type: String,
-      enum: ['Motorcycle', 'LTV', 'HTV', 'PSV'], // ✅ fixed
+      enum: ['Motorcycle', 'LTV', 'HTV', 'PSV'], 
       required: true,
-      index: true, // 🔹 reports fast
+      index: true, 
     },
     available: {
       type: Boolean,
       default: true,
-      index: true, // 🔹 availability reports
+      index: true, 
     },
     assignedVehicle: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vehicle',
       default: null,
-      index: true, // 🔹 assigned vs free
+      index: true, 
     },
   },
   { timestamps: true }
 );
 
-/* ===================== INDEXES ===================== */
 
-// 🔥 Compound index for dashboard & reports
 driverSchema.index({ available: 1, licenseType: 1 });
 
-// 🔥 Monthly / time-based reports
 driverSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Driver', driverSchema);
+

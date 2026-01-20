@@ -257,4 +257,3 @@ module.exports = {
   monthlyVehicleReport,
 };
 
-console.log();
