@@ -15,9 +15,8 @@ const authorizeRoles = (...targetRoles) => {
       });
     }
 
-    // Check if user can access ANY of the target roles
     const canAccess = targetRoles.some(role =>
-      roleHierarchy[userRole].includes(role)
+      role === userRole || roleHierarchy[userRole].includes(role)
     );
 
     if (!canAccess) {
