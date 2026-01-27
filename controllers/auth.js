@@ -2,6 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
 const User = require("../models/User");
 
+/* ================= REGISTER ================= */
 const register = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
 
@@ -9,26 +10,15 @@ const register = async (req, res) => {
     throw new BadRequestError("Please provide all values");
   }
 
-  const allowedRoles = ["admin", "manager", "driver"];
-  if (role && !allowedRoles.includes(role)) {
-    throw new BadRequestError("Invalid role");
-  }
-
-  if (req.user?.role === "manager" && role === "admin") {
+  // 🔐 BLOCK ADMIN CREATION
+  if (role === "admin") {
     return res.status(StatusCodes.FORBIDDEN).json({
       success: false,
-      message: "Manager cannot create admin",
+      message: "Admin creation is not allowed",
     });
   }
 
-  if (req.user?.role === "driver") {
-    return res.status(StatusCodes.FORBIDDEN).json({
-      success: false,
-      message: "Driver cannot create users",
-    });
-  }
-
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       msg: "Email already exists",
@@ -38,7 +28,7 @@ const register = async (req, res) => {
   const user = await User.create({
     firstName,
     lastName,
-    email,
+    email: email.toLowerCase(),
     password,
     role: role || "driver",
   });
@@ -57,6 +47,7 @@ const register = async (req, res) => {
   });
 };
 
+/* ================= LOGIN ================= */
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,7 +55,10 @@ const login = async (req, res) => {
     throw new BadRequestError("Please provide email and password");
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({
+    email: email.toLowerCase(),
+  }).select("+password");
+
   if (!user) {
     throw new UnauthenticatedError("Invalid Credentials");
   }
@@ -72,6 +66,17 @@ const login = async (req, res) => {
   const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) {
     throw new UnauthenticatedError("Invalid Credentials");
+  }
+
+  // 🔐 SINGLE ADMIN LOGIN ONLY
+  if (
+    user.role === "admin" &&
+    user.email !== process.env.SUPER_ADMIN_EMAIL
+  ) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      success: false,
+      message: "Unauthorized admin access",
+    });
   }
 
   const token = user.createJWT();
@@ -88,6 +93,7 @@ const login = async (req, res) => {
   });
 };
 
+/* ================= USERS ================= */
 const getAllUsers = async (req, res) => {
   const currentRole = req.user.role;
 
@@ -139,75 +145,54 @@ const deleteUser = async (req, res) => {
   });
 };
 
-
+/* ================= REPORTS ================= */
 const totalManagers = async (req, res) => {
-  try {
-    const result = await User.aggregate([
-      { $match: { role: "manager" } },
-      { $count: "totalManagers" },
-    ]);
+  const result = await User.aggregate([
+    { $match: { role: "manager" } },
+    { $count: "totalManagers" },
+  ]);
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      totalManagers: result[0]?.totalManagers || 0,
-    });
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  res.status(StatusCodes.OK).json({
+    success: true,
+    totalManagers: result[0]?.totalManagers || 0,
+  });
 };
 
 const usersByRoleReport = async (req, res) => {
-  try {
-    const result = await User.aggregate([
-      {
-        $group: {
-          _id: "$role",
-          count: { $sum: 1 },
-        },
+  const result = await User.aggregate([
+    {
+      $group: {
+        _id: "$role",
+        count: { $sum: 1 },
       },
-    ]);
+    },
+  ]);
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      report: result,
-    });
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  res.status(StatusCodes.OK).json({
+    success: true,
+    report: result,
+  });
 };
 
 const monthlyManagerReport = async (req, res) => {
-  try {
-    const result = await User.aggregate([
-      { $match: { role: "manager" } },
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
-          },
-          count: { $sum: 1 },
+  const result = await User.aggregate([
+    { $match: { role: "manager" } },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
         },
+        count: { $sum: 1 },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
-    ]);
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1 } },
+  ]);
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      report: result,
-    });
-  } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  res.status(StatusCodes.OK).json({
+    success: true,
+    report: result,
+  });
 };
 
 module.exports = {
@@ -219,5 +204,3 @@ module.exports = {
   usersByRoleReport,
   monthlyManagerReport,
 };
-
-
