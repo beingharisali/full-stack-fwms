@@ -45,8 +45,8 @@ router.get(
 // ➕ Create Driver (Admin / Manager)
 router.post(
 	"/",
-	authorizeRoles("admin", "manager"),
-	driverController.createDriver,
+	authorizeRoles("admin", "manager"),(req, res, next) =>
+	driverController.createDriver(req, res, next),
 );
 
 // 📄 Get All Drivers
