@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(
   rateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 100,
+    limit: 2000,
   })
 );
 

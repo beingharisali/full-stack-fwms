@@ -3,6 +3,12 @@ const mongoose = require('mongoose');
 
 const driverSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
     name: {
       type: String,
       required: true,
