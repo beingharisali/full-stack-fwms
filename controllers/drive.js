@@ -37,7 +37,8 @@ const createDriver = async (req, res, next) => {
             if (existingUser) {
                 return res.status(400).json({ success: false, msg: "Email already exists" });
             }
-
+           
+            
             const parts = (name || "").trim().split(/\s+/);
             createdUser = await User.create({
                 firstName: parts.shift() || name,
