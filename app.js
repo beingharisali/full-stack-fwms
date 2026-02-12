@@ -1,4 +1,6 @@
 require('dotenv').config({ path: './.env' });
+// 1. YE LINE ADD KAREIN (Install: npm install express-async-errors)
+require('express-async-errors'); 
 
 const express = require('express');
 const cors = require('cors');
@@ -50,12 +52,18 @@ app.use('/api/v1/trips', authentication, tripRoutes);
 
 // Error handlers
 app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware);
+// Yeh middleware ab crashes ko handle karega
+app.use(errorHandlerMiddleware); 
 
 const port = 5000;
 
 const start = async () => {
   try {
+    // Check karein process.env.MONGO_URI sahi aa raha hai ya nahi
+    if(!process.env.MONGO_URI) {
+        console.error("ERROR: MONGO_URI is not defined in .env file");
+        process.exit(1);
+    }
     await connectDB(process.env.MONGO_URI);
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
