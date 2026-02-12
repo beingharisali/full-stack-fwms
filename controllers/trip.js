@@ -214,6 +214,39 @@ const unassignTrip = async (req, res) => {
 		});
 	}
 };
+const getMyTrips = async (req, res) => {
+    try {
+        // 1. Check karein ke authentication middleware se user mil raha hai
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
+        // 2. Driver model mein check karein ke is User ID ka Driver ID kya hai
+        // Kyunki 'assignedDriver' field mein 'Driver' model ki ID store hoti hai, 'User' ki nahi.
+        const driverProfile = await Driver.findOne({ user: req.user.userId });
+        
+        if (!driverProfile) {
+            return res.status(404).json({ success: false, message: "Driver profile not found" });
+        }
+
+        // 3. Trip find karein jahan assignedDriver match kare
+        const trips = await Trip.find({ assignedDriver: driverProfile._id })
+            .sort("-date")
+            .populate("createdBy", "name email");
+
+        res.status(200).json({
+            success: true,
+            count: trips.length,
+            data: trips,
+        });
+    } catch (error) {
+        console.error("Error in getMyTrips:", error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server Error: " + error.message 
+        });
+    }
+};
 
 module.exports = {
 	createTrip,
@@ -223,4 +256,5 @@ module.exports = {
 	deleteTrip,
 	assignTrip,
 	unassignTrip,
+	getMyTrips,
 };
